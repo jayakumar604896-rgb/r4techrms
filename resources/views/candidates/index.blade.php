@@ -249,7 +249,31 @@
                 </div>
             </div>
         </div>
-    </div>
+    @if(request()->has('source') || request()->has('status') || request()->has('filter') || request()->has('type'))
+        @php
+            $filterName = request('source') ?? request('status') ?? request('filter') ?? request('type');
+            $filterLabels = [
+                'database' => 'Data Base CVs',
+                'website' => 'Website CVs',
+                'other' => 'Other CVs',
+                'shortlisted' => 'CVs Shortlisted',
+                'submitted' => 'CVs Submitted / Re-Awage',
+                'domestic' => 'Pan India (Domestic) CVs',
+                'international' => 'International CVs',
+            ];
+            $displayLabel = $filterLabels[strtolower($filterName)] ?? ucwords(str_replace(['_', '-'], ' ', $filterName));
+        @endphp
+        <div class="alert alert-info border-0 shadow-sm d-flex justify-content-between align-items-center mb-3 py-2 px-3 rounded-3" style="background-color: #e7f3ff; color: #004085;">
+            <div>
+                <i class="mdi mdi-filter-check me-2" style="font-size: 18px;"></i>
+                Filtered by: <strong>{{ $displayLabel }}</strong> 
+                <span class="badge bg-primary text-white ms-2">{{ $candidates->count() }} records found</span>
+            </div>
+            <a href="{{ route('candidates.index') }}" class="btn btn-sm btn-outline-primary" style="font-size: 12px;">
+                <i class="mdi mdi-close-circle-outline me-1"></i> Clear Filter
+            </a>
+        </div>
+    @endif
 
     {{-- Enhanced Card --}}
     <div class="card candidates-card">

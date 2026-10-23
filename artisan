@@ -1,6 +1,19 @@
 #!/usr/bin/env php
 <?php
 
+if (PHP_VERSION_ID < 80200) {
+    $phpBinary = 'C:\\xampp\\php\\php.exe';
+    if (file_exists($phpBinary)) {
+        $cmd = escapeshellarg($phpBinary) . ' ' . escapeshellarg(__FILE__);
+        if (isset($argv) && count($argv) > 1) {
+            $args = array_map('escapeshellarg', array_slice($argv, 1));
+            $cmd .= ' ' . implode(' ', $args);
+        }
+        passthru($cmd, $exitCode);
+        exit($exitCode);
+    }
+}
+
 use Illuminate\Foundation\Application;
 use Symfony\Component\Console\Input\ArgvInput;
 

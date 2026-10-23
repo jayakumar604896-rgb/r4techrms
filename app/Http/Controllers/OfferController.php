@@ -5,16 +5,34 @@ namespace App\Http\Controllers;
 use App\Models\Offer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 
 class OfferController extends Controller
 {
     /**
      * Display a listing of the offers.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $offers = Offer::latest()->paginate(10);
-        return view('offer.index', compact('offers'));
+        $userType = Auth::user()->user_type;
+        $type = $request->get('type', 'all');
+        $query = Offer::query();
+
+        if (in_array($userType, ['Domestic', 'International'])) {
+            $query->where('user_type', $userType);
+        }
+
+        if ($type !== 'all' && !in_array($userType, ['Domestic', 'International'])) {
+            $query->where('user_type', ucfirst($type));
+        }
+
+        $offers = $query->latest()->paginate(10);
+        $counts = [
+            'all' => Offer::count(),
+            'Domestic' => Offer::where('user_type', 'Domestic')->count(),
+            'International' => Offer::where('user_type', 'International')->count(),
+        ];
+        return view('offer.index', compact('offers', 'counts'));
     }
 
     /**

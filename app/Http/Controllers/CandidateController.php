@@ -61,30 +61,74 @@ class CandidateController extends Controller
             'filename' => $filename
         ]);
     }
-    public function index()
+    public function index(Request $request)
     {
         $userType = Auth::user()->user_type;
-        $query = Candidate::query();
+        $baseQuery = Candidate::query();
         if (in_array($userType, ['Domestic', 'International'])) {
-            $query->where('user_type', $userType);
+            $baseQuery->where('user_type', $userType);
         }
-        $candidates = $query->orderByDesc('created_at')->get();
+
+        // Base overall stats for top cards
+        $allCandidates = (clone $baseQuery)->get();
         $candidateCounts = [
-            'total' => $candidates->where('user_type','Domestic')->count(),
-            'inprogress' => $candidates->where('user_type','Domestic')->where('status', 'Inprocess')->count(),
-            'selected' => $candidates->where('user_type','Domestic')->where('status', 'Selected')->count(),
-            'waitinglist' => $candidates->where('user_type','Domestic')->where('status', 'Waitting List')->count(),
-            'rejected' => $candidates->where('user_type','Domestic')->where('status', 'Rejects')->count(),
-            'backout' => $candidates->where('user_type','Domestic')->where('status', 'Back Out')->count(),
+            'total' => $allCandidates->where('user_type','Domestic')->count(),
+            'inprogress' => $allCandidates->where('user_type','Domestic')->where('status', 'Inprocess')->count(),
+            'selected' => $allCandidates->where('user_type','Domestic')->where('status', 'Selected')->count(),
+            'waitinglist' => $allCandidates->where('user_type','Domestic')->where('status', 'Waitting List')->count(),
+            'rejected' => $allCandidates->where('user_type','Domestic')->where('status', 'Rejects')->count(),
+            'backout' => $allCandidates->where('user_type','Domestic')->where('status', 'Back Out')->count(),
         ];
         $internationalcandidateCounts = [
-            'total' => $candidates->where('user_type','International')->count(),
-            'inprogress' => $candidates->where('user_type','International')->where('status', 'Inprocess')->count(),
-            'selected' => $candidates->where('user_type','International')->where('status', 'Selected')->count(),
-            'waitinglist' => $candidates->where('user_type','International')->where('status', 'Waitting List')->count(),
-            'rejected' => $candidates->where('user_type','International')->where('status', 'Rejects')->count(),
-            'backout' => $candidates->where('user_type','International')->where('status', 'Back Out')->count(),
+            'total' => $allCandidates->where('user_type','International')->count(),
+            'inprogress' => $allCandidates->where('user_type','International')->where('status', 'Inprocess')->count(),
+            'selected' => $allCandidates->where('user_type','International')->where('status', 'Selected')->count(),
+            'waitinglist' => $allCandidates->where('user_type','International')->where('status', 'Waitting List')->count(),
+            'rejected' => $allCandidates->where('user_type','International')->where('status', 'Rejects')->count(),
+            'backout' => $allCandidates->where('user_type','International')->where('status', 'Back Out')->count(),
         ];
+
+        $query = clone $baseQuery;
+
+        // Source filter (database / website / other)
+        $source = strtolower($request->get('source') ?? $request->get('filter') ?? '');
+        if ($source === 'database') {
+            $query->whereNotNull('resume')->where('resume', '!=', '');
+        } elseif ($source === 'website') {
+            $query->where(function($q) {
+                $q->where('remarks', 'like', '%website%')
+                  ->orWhere('code_no', 'like', '%web%');
+            });
+        } elseif ($source === 'other') {
+            $query->where(function($q) {
+                $q->whereNull('resume')->orWhere('resume', '');
+            });
+        }
+
+        // Status filter (shortlisted / submitted / specific status)
+        $status = $request->get('status');
+        if ($status) {
+            $statusLower = strtolower($status);
+            if ($statusLower === 'shortlisted' || $statusLower === 'selected') {
+                $query->whereIn('status', ['Selected', 'Shortlisted']);
+            } elseif ($statusLower === 'submitted' || $statusLower === 'inprocess' || $statusLower === 're-awage') {
+                $query->whereIn('status', ['Inprocess', 'Waitting List', 'Submitted', 'In Process']);
+            } else {
+                $query->where('status', $status);
+            }
+        } elseif ($source === 'shortlisted') {
+            $query->whereIn('status', ['Selected', 'Shortlisted']);
+        } elseif ($source === 'submitted') {
+            $query->whereIn('status', ['Inprocess', 'Waitting List', 'Submitted', 'In Process']);
+        }
+
+        // User type filter (Domestic / International)
+        $type = $request->get('type');
+        if ($type && !in_array($userType, ['Domestic', 'International'])) {
+            $query->where('user_type', ucfirst($type));
+        }
+
+        $candidates = $query->orderByDesc('created_at')->get();
         
         $placementtypes = PlacementType::pluck('name','id');
         $industries = Industry::pluck('name','id');

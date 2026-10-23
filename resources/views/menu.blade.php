@@ -99,6 +99,16 @@
         font-size: 12px;
         min-width: 30px;
         text-align: center;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s ease, background-color 0.2s ease;
+    }
+
+    .dashboard-card .card-body .menu-item:hover .badge-count:not(.hyper) {
+        transform: scale(1.05);
+        background: #002752;
     }
     
     .dashboard-card .card-body .menu-item .badge-count.hyper {
@@ -107,7 +117,8 @@
         transition: all 0.2s ease;
     }
     
-    .dashboard-card .card-body .menu-item .badge-count.hyper:hover {
+    .dashboard-card .card-body .menu-item .badge-count.hyper:hover,
+    .dashboard-card .card-body .menu-item:hover .badge-count.hyper {
         background: #218838;
         transform: scale(1.05);
     }
@@ -328,25 +339,25 @@
                 </div>
             </div>
             <div class="card-body">
-                <a href="#" class="menu-item">
+                <a href="{{ route('candidates.index', ['source' => 'database']) }}" class="menu-item">
                     <span class="menu-item-text">
                         <i class="fas fa-database"></i> Data Base CVs
                     </span>
                     <span class="badge-count">{{ $databaseCVs ?? 0 }}</span>
                 </a>
-                <a href="#" class="menu-item">
+                <a href="{{ route('candidates.index', ['source' => 'website']) }}" class="menu-item">
                     <span class="menu-item-text">
                         <i class="fas fa-globe"></i> Website CVs
                     </span>
                     <span class="badge-count">{{ $websiteCVs ?? 0 }}</span>
                 </a>
-                <a href="#" class="menu-item">
+                <a href="{{ route('candidates.index', ['source' => 'other']) }}" class="menu-item">
                     <span class="menu-item-text">
                         <i class="fas fa-upload"></i> Other CVs
                     </span>
                     <span class="badge-count">{{ $otherCVs ?? 0 }}</span>
                 </a>
-                <a href="#" class="menu-item">
+                <a href="{{ route('candidates.index') }}" class="menu-item">
                     <span class="menu-item-text">
                         <i class="fas fa-chart-bar"></i> Total CV volumes
                     </span>
@@ -354,19 +365,19 @@
                         <i class="fas fa-file"></i> {{ $totalCVs ?? 0 }}
                     </span>
                 </a>
-                <a href="#" class="menu-item">
+                <a href="{{ route('candidates.index', ['status' => 'shortlisted']) }}" class="menu-item">
                     <span class="menu-item-text">
                         <i class="fas fa-check-circle"></i> CVs Shortlisted
                     </span>
                     <span class="badge-count">{{ $shortlistedCVs ?? 0 }}</span>
                 </a>
-                <a href="#" class="menu-item">
+                <a href="{{ route('candidates.index', ['status' => 'submitted']) }}" class="menu-item">
                     <span class="menu-item-text">
                         <i class="fas fa-paper-plane"></i> CVs Submitted / Re-Awage
                     </span>
                     <span class="badge-count">{{ $submittedCVs ?? 0 }}</span>
                 </a>
-                <a href="#" class="menu-item">
+                <a href="{{ route('add-candidates') }}" class="menu-item">
                     <span class="menu-item-text">
                         <i class="fas fa-fast-forward"></i> Quick Uploads
                     </span>
@@ -385,35 +396,37 @@
                 </div>
             </div>
             <div class="card-body">
-                <a href="#" class="menu-item">
+                <a href="{{ route('clients.index', ['type' => 'domestic']) }}" class="menu-item">
                     <span class="menu-item-text">
                         <i class="fas fa-globe-asia"></i> List of Pan India Clients
                     </span>
+                    <span class="badge-count">{{ $panIndiaClientsCount ?? 0 }}</span>
                 </a>
-                <a href="#" class="menu-item">
+                <a href="{{ route('clients.index', ['type' => 'international']) }}" class="menu-item">
                     <span class="menu-item-text">
                         <i class="fas fa-globe-americas"></i> List of International Clients
                     </span>
+                    <span class="badge-count">{{ $internationalClientsCount ?? 0 }}</span>
                 </a>
-                <a href="#" class="menu-item" onclick="showMarketingDetails('pan-india')">
+                <a href="{{ route('sendtoothers.index', ['type' => 'domestic']) }}" class="menu-item">
                     <span class="menu-item-text">
                         <i class="fas fa-chart-line"></i> Pan India Marketing
                     </span>
                     <span class="badge-count hyper">
-                        <i class="fas fa-users"></i> {{ $panIndiaMarketingCount ?? 1247 }}
+                        <i class="fas fa-users"></i> {{ $panIndiaMarketingCount ?? 0 }}
                     </span>
                 </a>
-                <a href="#" class="menu-item" onclick="showMarketingDetails('international')">
+                <a href="{{ route('sendtoothers.index', ['type' => 'international']) }}" class="menu-item">
                     <span class="menu-item-text">
                         <i class="fas fa-chart-line"></i> International Marketing
                     </span>
                     <span class="badge-count hyper">
-                        <i class="fas fa-users"></i> {{ $internationalMarketingCount ?? 856 }}
+                        <i class="fas fa-users"></i> {{ $internationalMarketingCount ?? 0 }}
                     </span>
                 </a>
                 
                 <div class="view-all">
-                    <a href="#">View All <i class="fas fa-arrow-right"></i></a>
+                    <a href="{{ route('sendtoothers.index') }}">View All <i class="fas fa-arrow-right"></i></a>
                 </div>
                 
                 <!-- Scrollable Marketing Details -->
@@ -422,13 +435,13 @@
                         <h6 class="text-muted mb-2"><i class="fas fa-flag"></i> Pan India Marketing</h6>
                         @if(isset($panIndiaMarketing) && $panIndiaMarketing->count() > 0)
                             @foreach($panIndiaMarketing as $item)
-                            <div class="menu-item" style="font-size: 12px; padding: 4px 8px; cursor: default;">
+                            <a href="{{ route('clients.show', $item->id) }}" class="menu-item" style="font-size: 12px; padding: 4px 8px; text-decoration: none;">
                                 <span class="menu-item-text">
                                     <i class="fas fa-circle" style="font-size: 6px; color: #28a745;"></i>
-                                    {{ $item->client_name ?? 'Client Name' }}
+                                    {{ $item->company_name ?? $item->client_name ?? 'Client Name' }}
                                 </span>
-                                <span class="badge-count" style="font-size: 10px; padding: 1px 8px;">{{ $item->count ?? 0 }}</span>
-                            </div>
+                                <span class="badge-count" style="font-size: 10px; padding: 1px 8px;"><i class="fas fa-eye"></i></span>
+                            </a>
                             @endforeach
                         @else
                             <div class="menu-item" style="font-size: 12px; padding: 4px 8px; cursor: default;">
@@ -442,13 +455,13 @@
                         <h6 class="text-muted mt-3 mb-2"><i class="fas fa-globe"></i> International Marketing</h6>
                         @if(isset($internationalMarketing) && $internationalMarketing->count() > 0)
                             @foreach($internationalMarketing as $item)
-                            <div class="menu-item" style="font-size: 12px; padding: 4px 8px; cursor: default;">
+                            <a href="{{ route('clients.show', $item->id) }}" class="menu-item" style="font-size: 12px; padding: 4px 8px; text-decoration: none;">
                                 <span class="menu-item-text">
                                     <i class="fas fa-circle" style="font-size: 6px; color: #17a2b8;"></i>
-                                    {{ $item->client_name ?? 'Client Name' }}
+                                    {{ $item->company_name ?? $item->client_name ?? 'Client Name' }}
                                 </span>
-                                <span class="badge-count" style="font-size: 10px; padding: 1px 8px;">{{ $item->count ?? 0 }}</span>
-                            </div>
+                                <span class="badge-count" style="font-size: 10px; padding: 1px 8px;"><i class="fas fa-eye"></i></span>
+                            </a>
                             @endforeach
                         @else
                             <div class="menu-item" style="font-size: 12px; padding: 4px 8px; cursor: default;">
@@ -471,30 +484,35 @@
                 </div>
             </div>
             <div class="card-body">
-                <a href="#" class="menu-item">
+                <a href="{{ route('recruiters') }}" class="menu-item">
                     <span class="menu-item-text">
                         <i class="fas fa-user-tie"></i> Employees / HR Recruiters
                     </span>
+                    <span class="badge-count">{{ $employeesCount ?? 0 }}</span>
                 </a>
-                <a href="#" class="menu-item">
+                <a href="{{ route('clients.index') }}" class="menu-item">
                     <span class="menu-item-text">
                         <i class="fas fa-handshake"></i> Client
                     </span>
+                    <span class="badge-count">{{ $clientsCount ?? 0 }}</span>
                 </a>
-                <a href="#" class="menu-item">
+                <a href="{{ route('agents.index') }}" class="menu-item">
                     <span class="menu-item-text">
                         <i class="fas fa-briefcase"></i> Business Agent
                     </span>
+                    <span class="badge-count">{{ $businessAgentsCount ?? 0 }}</span>
                 </a>
-                <a href="#" class="menu-item">
+                <a href="{{ route('agents.index') }}" class="menu-item">
                     <span class="menu-item-text">
                         <i class="fas fa-users-cog"></i> Sub Agent
                     </span>
+                    <span class="badge-count">{{ $subAgentsCount ?? 0 }}</span>
                 </a>
-                <a href="#" class="menu-item">
+                <a href="{{ route('service-provider-details.index') }}" class="menu-item">
                     <span class="menu-item-text">
                         <i class="fas fa-concierge-bell"></i> Service Providers
                     </span>
+                    <span class="badge-count">{{ $serviceProvidersCount ?? 0 }}</span>
                 </a>
             </div>
         </div>
@@ -589,51 +607,51 @@
                 </div>
             </div>
             <div class="card-body">
-                <a href="#" class="menu-item">
+                <a href="{{ route('domestic-invoice-reports.index') }}" class="menu-item">
                     <span class="menu-item-text">
                         <i class="fas fa-file-alt"></i> Proforma Invoice
                     </span>
-                    <span class="badge-count">{{ $dprCount ?? 0 }}</span>
+                    <span class="badge-count">{{ $proformaInvoiceCount ?? 0 }}</span>
                 </a>
 
-                <a href="#" class="menu-item">
+                <a href="{{ route('tax-invoice-reports.index') }}" class="menu-item">
                     <span class="menu-item-text">
                         <i class="fas fa-calendar-alt"></i> Tax Invoice
                     </span>
-                    <span class="badge-count">{{ $monthlyProgressCount ?? 0 }}</span>
+                    <span class="badge-count">{{ $taxInvoiceCount ?? 0 }}</span>
                 </a>
 
-                <a href="#" class="menu-item">
+                <a href="{{ route('invoice-reports.index') }}" class="menu-item">
                     <span class="menu-item-text">
                         <i class="fas fa-chart-line"></i> Commercial Invoice
                     </span>
                     <span class="badge-count hyper">
-                        <i class="fas fa-chart-pie"></i> {{ $pmsReportCount ?? 0 }}
+                        <i class="fas fa-file-invoice-dollar"></i> {{ $commercialInvoiceCount ?? 0 }}
                     </span>
                 </a>
 
-				 <a href="#" class="menu-item">
+				 <a href="{{ route('tax-international-invoice-reports.index') }}" class="menu-item">
                     <span class="menu-item-text">
                         <i class="fas fa-chart-line"></i> Sale Invoice
                     </span>
                     <span class="badge-count hyper">
-                        <i class="fas fa-chart-pie"></i> {{ $pmsReportCount ?? 0 }}
+                        <i class="fas fa-file-invoice-dollar"></i> {{ $saleInvoiceCount ?? 0 }}
                     </span>
                 </a> 
-				<a href="#" class="menu-item">
+				<a href="{{ route('domestic-invoice-reports.index') }}" class="menu-item">
                     <span class="menu-item-text">
                         <i class="fas fa-chart-line"></i> QUOTATIONS
                     </span>
                     <span class="badge-count hyper">
-                        <i class="fas fa-chart-pie"></i> {{ $pmsReportCount ?? 0 }}
+                        <i class="fas fa-file-invoice"></i> {{ $quotationsCount ?? 0 }}
                     </span>
                 </a>
- 				<a href="#" class="menu-item">
+ 				<a href="{{ route('receipts.index') }}" class="menu-item">
                     <span class="menu-item-text">
                         <i class="fas fa-chart-line"></i> E-Receipts
                     </span>
                     <span class="badge-count hyper">
-                        <i class="fas fa-chart-pie"></i> {{ $pmsReportCount ?? 0 }}
+                        <i class="fas fa-receipt"></i> {{ $receiptsCount ?? 0 }}
                     </span>
                 </a>
 				<div class="note-section" style="border-left-color: #28a745;">
@@ -641,7 +659,7 @@
                     <strong>Note:</strong> Pan India, International Scroll Button to Appear.
                 </div>
                 <div class="view-all">
-                    <a href="#">View All <i class="fas fa-arrow-right"></i></a>
+                    <a href="{{ route('domestic-invoice-reports.index') }}">View All <i class="fas fa-arrow-right"></i></a>
                 </div>
             </div>
         </div>
@@ -654,26 +672,26 @@
                 </div>
             </div>
             <div class="card-body">
-                <a href="#" class="menu-item">
+                <a href="{{ route('sendtoothers.index') }}" class="menu-item">
                     <span class="menu-item-text">
                         <i class="fas fa-building"></i> Mails to Client
                     </span>
                     <span class="badge-count">{{ $clientMails ?? 0 }}</span>
                 </a>
-                <a href="#" class="menu-item">
+                <a href="{{ route('sendtocandidates.index') }}" class="menu-item">
                     <span class="menu-item-text">
                         <i class="fas fa-user"></i> Mails to Candidate
                     </span>
                     <span class="badge-count">{{ $candidateMails ?? 0 }}</span>
                 </a>
-                <a href="#" class="menu-item">
+                <a href="{{ route('offer.index') }}" class="menu-item">
                     <span class="menu-item-text">
                         <i class="fas fa-file-signature"></i> Offer Request / Visa Request
                     </span>
                     <span class="badge-count">{{ $offerRequests ?? 0 }}</span>
                 </a>
  				<div class="view-all">
-                    <a href="#">View all <i class="fas fa-arrow-right"></i></a>
+                    <a href="{{ route('sendtoothers.index') }}">View all <i class="fas fa-arrow-right"></i></a>
                 </div>
             </div>
         </div>
@@ -687,38 +705,38 @@
                 </div>
             </div>
             <div class="card-body">
-                <a href="#" class="menu-item">
+                <a href="{{ route('offer.index', ['type' => 'domestic', 'category' => 'pre_offer']) }}" class="menu-item">
                     <span class="menu-item-text">
                         <i class="fas fa-flag"></i> Pre Offer Pan India
                     </span>
                     <span class="badge-count">{{ $preOfferPanIndia ?? 0 }}</span>
                 </a>
-                <a href="#" class="menu-item">
+                <a href="{{ route('offer.index', ['type' => 'domestic', 'category' => 'main_offer']) }}" class="menu-item">
                     <span class="menu-item-text">
                         <i class="fas fa-check-circle"></i> Main Offer Pan India
                     </span>
                     <span class="badge-count">{{ $mainOfferPanIndia ?? 0 }}</span>
                 </a>
-                <a href="#" class="menu-item">
+                <a href="{{ route('sendtocandidates.index') }}" class="menu-item">
                     <span class="menu-item-text">
                         <i class="fas fa-envelope"></i> General Email Offer
                     </span>
                     <span class="badge-count">{{ $generalEmailOffers ?? 0 }}</span>
                 </a>
-                <a href="#" class="menu-item">
+                <a href="{{ route('offer.index', ['type' => 'international', 'category' => 'pre_offer']) }}" class="menu-item">
                     <span class="menu-item-text">
                         <i class="fas fa-globe"></i> Pre Offer International
                     </span>
                     <span class="badge-count">{{ $preOfferInternational ?? 0 }}</span>
                 </a>
-                <a href="#" class="menu-item">
+                <a href="{{ route('offer.index', ['type' => 'international', 'category' => 'main_offer']) }}" class="menu-item">
                     <span class="menu-item-text">
                         <i class="fas fa-globe-americas"></i> Main Offer International
                     </span>
                     <span class="badge-count">{{ $mainOfferInternational ?? 0 }}</span>
                 </a>
  				<div class="view-all">
-                    <a href="#">View all <i class="fas fa-arrow-right"></i></a>
+                    <a href="{{ route('offer.index') }}">View all <i class="fas fa-arrow-right"></i></a>
                 </div>
             </div>
         </div>
@@ -964,19 +982,13 @@
 <script>
     function showMarketingDetails(type) {
         if (type === 'pan-india') {
-            alert('Pan India Marketing Details\nTotal: 1,247\n\nClick to view complete details.');
+            window.location.href = "{{ route('sendtoothers.index', ['type' => 'domestic']) }}";
         } else if (type === 'international') {
-            alert('International Marketing Details\nTotal: 856\n\nClick to view complete details.');
+            window.location.href = "{{ route('sendtoothers.index', ['type' => 'international']) }}";
         }
     }
     
     $(document).ready(function() {
-        $('.badge-count.hyper').on('click', function(e) {
-            e.stopPropagation();
-            e.preventDefault();
-            console.log('Hyper link clicked');
-        });
-        
         $('.menu-item:not([style*="cursor: default"])').on('mouseenter', function() {
             $(this).css('background-color', '#f0f4ff');
         }).on('mouseleave', function() {

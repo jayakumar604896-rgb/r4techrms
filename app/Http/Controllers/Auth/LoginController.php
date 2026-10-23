@@ -11,6 +11,18 @@ use App\Models\PlacementType;
 use App\Models\Industry;
 use App\Models\Sector;
 use App\Models\RecruiterDailyProgress;
+use App\Models\Client;
+use App\Models\Agent;
+use App\Models\ServiceProviderDetail;
+use App\Models\CommunicationLog;
+use App\Models\Demand;
+use App\Models\DomesticProformanceInvoiceReport;
+use App\Models\TaxInvoiceReport;
+use App\Models\TaxInternationalInvoiceReport;
+use App\Models\InvoiceReport;
+use App\Models\Receipt;
+use App\Models\Offer;
+use App\Models\CandidateFile;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -90,7 +102,147 @@ class LoginController extends Controller
     }
 	public function menu()
     {
-		return view('menu');
+        $user = Auth::user();
+        $userType = $user ? $user->user_type : null;
+        $isScoped = in_array($userType, ['Domestic', 'International']);
+
+        // 1. Resume Management counts
+        $candQuery = Candidate::query();
+        if ($isScoped) {
+            $candQuery->where('user_type', $userType);
+        }
+        $totalCVs = (clone $candQuery)->count();
+        $databaseCVs = (clone $candQuery)->whereNotNull('resume')->where('resume', '!=', '')->count();
+        $websiteCVs = (clone $candQuery)->where(function($q) {
+            $q->where('remarks', 'like', '%website%')->orWhere('code_no', 'like', '%web%');
+        })->count();
+        $otherCVs = (clone $candQuery)->where(function($q) {
+            $q->whereNull('resume')->orWhere('resume', '');
+        })->count();
+        $shortlistedCVs = (clone $candQuery)->whereIn('status', ['Selected', 'Shortlisted'])->count();
+        $submittedCVs = (clone $candQuery)->whereIn('status', ['Inprocess', 'Waitting List', 'Submitted', 'In Process'])->count();
+
+        // 2. Daily Marketing counts
+        $clientQuery = Client::query();
+        if ($isScoped) {
+            $clientQuery->where('user_type', $userType);
+        }
+        $panIndiaClientsCount = (clone $clientQuery)->where('user_type', 'Domestic')->count();
+        $internationalClientsCount = (clone $clientQuery)->where('user_type', 'International')->count();
+
+        $commQuery = CommunicationLog::where('type', 'Mail Send to Others');
+        if ($isScoped) {
+            $commQuery->where('user_type', $userType);
+        }
+        $panIndiaMarketingCount = (clone $commQuery)->where('user_type', 'Domestic')->count();
+        $internationalMarketingCount = (clone $commQuery)->where('user_type', 'International')->count();
+        $totalMarketingCount = (clone $commQuery)->count();
+        if ($panIndiaMarketingCount === 0 && $internationalMarketingCount === 0 && $totalMarketingCount > 0) {
+            $panIndiaMarketingCount = $totalMarketingCount;
+        }
+
+        // Marketing clients list
+        $panIndiaMarketing = (clone $clientQuery)->where('user_type', 'Domestic')->limit(10)->get();
+        $internationalMarketing = (clone $clientQuery)->where('user_type', 'International')->limit(10)->get();
+
+        // 3. New Enrolment counts
+        $employeesCount = User::where('role', 'recruiter')->count();
+        $clientsCount = (clone $clientQuery)->count();
+
+        $agentQuery = Agent::query();
+        if ($isScoped) {
+            $agentQuery->where('user_type', $userType);
+        }
+        $businessAgentsCount = (clone $agentQuery)->count();
+        $subAgentsCount = (clone $agentQuery)->count();
+
+        $spQuery = ServiceProviderDetail::query();
+        if ($isScoped) {
+            $spQuery->where('user_type', $userType);
+        }
+        $serviceProvidersCount = (clone $spQuery)->count();
+
+        // 5. Demand Register counts
+        $demandQuery = Demand::query();
+        if ($isScoped) {
+            $demandQuery->where('user_type', $userType);
+        }
+        $domesticDemands = (clone $demandQuery)->where('user_type', 'Domestic')->count();
+        $internationalDemands = (clone $demandQuery)->where('user_type', 'International')->count();
+
+        // 7. Invoice & Quotations counts
+        $proformaInvoiceCount = ($isScoped && $userType === 'International') ? 0 : DomesticProformanceInvoiceReport::count();
+        $taxInvoiceCount = ($isScoped && $userType === 'International') ? 0 : TaxInvoiceReport::count();
+        $commercialInvoiceCount = ($isScoped && $userType === 'International') ? 0 : InvoiceReport::count();
+        $saleInvoiceCount = ($isScoped && $userType === 'Domestic') ? 0 : TaxInternationalInvoiceReport::count();
+        $quotationsCount = 0;
+        $receiptsCount = Receipt::count();
+
+        // 8. Mails Follow Up counts
+        $clientMailsQuery = CommunicationLog::where('type', 'Mail Send to Others');
+        if ($isScoped) {
+            $clientMailsQuery->where('user_type', $userType);
+        }
+        $clientMails = $clientMailsQuery->count();
+
+        $candMailsQuery = CommunicationLog::where('type', 'Mail Send to Candidate');
+        if ($isScoped) {
+            $candMailsQuery->where('user_type', $userType);
+        }
+        $candidateMails = $candMailsQuery->count();
+
+        $offerReqQuery = Offer::query();
+        if ($isScoped) {
+            $offerReqQuery->where('user_type', $userType);
+        }
+        $offerRequests = $offerReqQuery->count();
+
+        // 9. Offers to Candidate counts
+        $preOfferPanIndia = ($isScoped && $userType === 'International') ? 0 : Offer::where('user_type', 'Domestic')->count();
+        $mainOfferPanIndia = ($isScoped && $userType === 'International') ? 0 : Offer::where('user_type', 'Domestic')->count();
+        $genEmailQuery = CommunicationLog::where('type', 'Mail Send to Candidate')->where('subject', 'like', '%offer%');
+        if ($isScoped) {
+            $genEmailQuery->where('user_type', $userType);
+        }
+        $generalEmailOffers = $genEmailQuery->count();
+        $preOfferInternational = ($isScoped && $userType === 'Domestic') ? 0 : Offer::where('user_type', 'International')->count();
+        $mainOfferInternational = ($isScoped && $userType === 'Domestic') ? 0 : Offer::where('user_type', 'International')->count();
+
+		return view('menu', compact(
+            'totalCVs',
+            'databaseCVs',
+            'websiteCVs',
+            'otherCVs',
+            'shortlistedCVs',
+            'submittedCVs',
+            'panIndiaClientsCount',
+            'internationalClientsCount',
+            'panIndiaMarketingCount',
+            'internationalMarketingCount',
+            'panIndiaMarketing',
+            'internationalMarketing',
+            'employeesCount',
+            'clientsCount',
+            'businessAgentsCount',
+            'subAgentsCount',
+            'serviceProvidersCount',
+            'domesticDemands',
+            'internationalDemands',
+            'proformaInvoiceCount',
+            'taxInvoiceCount',
+            'commercialInvoiceCount',
+            'saleInvoiceCount',
+            'quotationsCount',
+            'receiptsCount',
+            'clientMails',
+            'candidateMails',
+            'offerRequests',
+            'preOfferPanIndia',
+            'mainOfferPanIndia',
+            'generalEmailOffers',
+            'preOfferInternational',
+            'mainOfferInternational'
+        ));
 	}
     public function otpForm()
     {

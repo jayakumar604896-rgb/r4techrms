@@ -335,9 +335,9 @@
               </a>
               <div class="collapse" id="tables">
                 <ul class="nav flex-column sub-menu">
-                  <li class="nav-item"> <a class="nav-link" href="{{route('candidates.index')}}"> Data Base CVs </a></li> 
-                   <li class="nav-item"> <a class="nav-link" href="#"> Website CVs </a></li> 
-                   <li class="nav-item"> <a class="nav-link" href="{{route('candidates.index')}}"> Other CVs </a></li> 
+                  <li class="nav-item"> <a class="nav-link" href="{{route('candidates.index', ['source' => 'database'])}}"> Data Base CVs </a></li> 
+                   <li class="nav-item"> <a class="nav-link" href="{{route('candidates.index', ['source' => 'website'])}}"> Website CVs </a></li> 
+                   <li class="nav-item"> <a class="nav-link" href="{{route('candidates.index', ['source' => 'other'])}}"> Other CVs </a></li> 
 					
                     </ul>
               </div>
