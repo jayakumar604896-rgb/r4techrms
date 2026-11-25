@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Brochure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 
 class BrochureController extends Controller
 {
@@ -87,8 +88,11 @@ class BrochureController extends Controller
 
     public function destroy($id)
     {
-        $brochure   =   Brochure::find($id);
-        Storage::disk('public')->delete($brochure->file_path);
+        if (!Auth::check() || strtolower(Auth::user()->role ?? '') !== 'admin') {
+            abort(403, 'Unauthorized action. Only administrators can delete records.');
+        }
+
+        $brochure = Brochure::findOrFail($id);
         $brochure->delete();
 
         return redirect()->route('newbrochures.index')->with('success', 'Brochure deleted successfully.');

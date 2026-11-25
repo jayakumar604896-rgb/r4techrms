@@ -264,7 +264,22 @@ class ClientController extends Controller
      */
     public function destroy($id)
     {
+        if (!Auth::check() || strtolower(Auth::user()->role ?? '') !== 'admin') {
+            abort(403, 'Unauthorized action. Only administrators can delete records.');
+        }
+
         $client = Client::findOrFail($id);
+
+        // Check dependencies before deletion
+        if (\App\Models\Candidate::where('company_id', $client->id)->exists() ||
+            \App\Models\InvoiceReport::where('client_id', $client->id)->exists() ||
+            \App\Models\DomesticProformanceInvoiceReport::where('client_id', $client->id)->exists() ||
+            \App\Models\TaxInvoiceReport::where('client_id', $client->id)->exists() ||
+            \App\Models\TaxInternationalInvoiceReport::where('client_id', $client->id)->exists()) {
+            return redirect()->route('clients.index')
+                ->with('error', 'Cannot delete client. This client has associated candidates or invoices.');
+        }
+
         $client->delete();
 
         return redirect()->route('clients.index')->with('success', 'Client deleted successfully!');

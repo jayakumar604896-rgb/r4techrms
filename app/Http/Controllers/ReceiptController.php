@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Receipt;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ReceiptController extends Controller
 {
@@ -102,9 +103,14 @@ class ReceiptController extends Controller
         return redirect()->route('receipts.index')->with('success', 'Receipt updated successfully.');
     }
 
-    public function destroy(Receipt $receipt)
+    public function destroy($receipt)
     {
-        $receipt->delete();
+        if (!Auth::check() || strtolower(Auth::user()->role ?? '') !== 'admin') {
+            abort(403, 'Unauthorized action. Only administrators can delete records.');
+        }
+
+        $item = $receipt instanceof Receipt ? $receipt : Receipt::findOrFail($receipt);
+        $item->delete();
         return redirect()->route('receipts.index')->with('success', 'Receipt deleted successfully.');
     }
 }

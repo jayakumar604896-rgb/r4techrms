@@ -355,13 +355,20 @@ class SendtoOthermailController extends Controller
     }
 
 
-    public function destroy(CommunicationLog $brochure)
+    public function destroy($id)
     {
-        Storage::disk('public')->delete($brochure->file_path);
-        $brochure->delete();
+        if (!Auth::check() || strtolower(Auth::user()->role ?? '') !== 'admin') {
+            abort(403, 'Unauthorized action. Only administrators can delete records.');
+        }
+
+        $log = $id instanceof CommunicationLog ? $id : CommunicationLog::findOrFail($id);
+        if ($log->file_path && Storage::disk('public')->exists($log->file_path)) {
+            Storage::disk('public')->delete($log->file_path);
+        }
+        $log->delete();
 
         return redirect()->route('sendtoothers.index')
-            ->with('success', 'CommunicationLog deleted successfully.');
+            ->with('success', 'Mail record deleted successfully.');
     }
 
     public function sendPdfEmail(Request $request)

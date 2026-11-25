@@ -472,6 +472,15 @@
                                         @endif
                                     </ul>
                                     @endif
+                                    @if(Auth::check() && strtolower(Auth::user()->role) === 'admin')
+                                    <form action="{{ route('clients.destroy', $client->id) }}" method="POST" class="d-inline ms-1">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-danger text-white shadow-sm" title="Delete Client" onclick="return confirm('Are you sure you want to delete this record?')">
+                                            <i class="mdi mdi-delete"></i>
+                                        </button>
+                                    </form>
+                                    @endif
                                 </div>
                             </td>
                         </tr>

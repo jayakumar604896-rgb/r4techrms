@@ -118,16 +118,18 @@
                                            class="btn btn-sm btn-primary">
                                             <i class="mdi mdi-pencil"></i>
                                         </a>
+                                        @if(Auth::check() && strtolower(Auth::user()->role) === 'admin')
                                         <form action="{{ route('company-settings.destroy', $setting->id) }}" 
                                               method="POST" 
                                               class="d-inline"
-                                              onsubmit="return confirm('Are you sure you want to delete this setting?')">
+                                              onsubmit="return confirm('Are you sure you want to delete this record?');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-sm btn-danger">
                                                 <i class="mdi mdi-delete"></i>
                                             </button>
                                         </form>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>

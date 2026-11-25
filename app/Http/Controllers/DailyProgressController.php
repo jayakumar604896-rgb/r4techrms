@@ -184,15 +184,16 @@ class DailyProgressController extends Controller
     }
     
     // Delete progress entry
-    public function destroy(DailyProgress $dailyProgress)
+    public function destroy($dailyProgress)
     {
-        // Check authorization
-        if ($dailyProgress->user_id !== Auth::id()) {
-            abort(403, 'Unauthorized action.');
+        // Only Admin role can delete
+        if (!Auth::check() || strtolower(Auth::user()->role ?? '') !== 'admin') {
+            abort(403, 'Unauthorized action. Only administrators can delete records.');
         }
-        
-        $dailyProgress->delete();
-        
+
+        $record = $dailyProgress instanceof DailyProgress ? $dailyProgress : DailyProgress::findOrFail($dailyProgress);
+        $record->delete();
+
         return redirect()->route('daily-progress.index')
             ->with('success', 'Daily progress deleted successfully!');
     }

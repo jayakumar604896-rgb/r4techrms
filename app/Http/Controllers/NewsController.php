@@ -115,7 +115,15 @@ class NewsController extends Controller
 
     public function destroy($id)
     {
-        News::findOrFail($id)->delete();
+        if (!Auth::check() || strtolower(Auth::user()->role ?? '') !== 'admin') {
+            abort(403, 'Unauthorized action. Only administrators can delete records.');
+        }
+
+        $news = News::findOrFail($id);
+        if ($news->image && file_exists(public_path($news->image))) {
+            @unlink(public_path($news->image));
+        }
+        $news->delete();
         return redirect()->route('news.index')->with('success', 'News deleted successfully');
     }
 }

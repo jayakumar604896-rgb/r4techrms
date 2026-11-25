@@ -482,7 +482,24 @@ class CandidateController extends Controller
      */
     public function destroy($id)
     {
+        if (!Auth::check() || strtolower(Auth::user()->role ?? '') !== 'admin') {
+            abort(403, 'Unauthorized action. Only administrators can delete records.');
+        }
+
         $candidate = Candidate::findOrFail($id);
+
+        // Check dependencies before deletion
+        if (CandidateFile::where('candidate_id', $candidate->id)->exists() ||
+            StatusHistory::where('candidate_id', $candidate->id)->exists() ||
+            \App\Models\CommunicationLog::where('candidate_id', $candidate->id)->exists()) {
+            return redirect()->route('candidates.index')
+                ->with('error', 'Cannot delete candidate. This candidate has associated files, logs, or status history.');
+        }
+
+        if ($candidate->resume && file_exists(public_path($candidate->resume))) {
+            @unlink(public_path($candidate->resume));
+        }
+
         $candidate->delete();
 
         return redirect()->route('candidates.index')->with('success', 'Candidate deleted successfully!');

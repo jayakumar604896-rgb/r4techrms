@@ -330,8 +330,13 @@ class OfferController extends Controller
     /**
      * Remove the specified offer from storage.
      */
-    public function destroy(Offer $offer)
+    public function destroy($id)
     {
+        if (!Auth::check() || strtolower(Auth::user()->role ?? '') !== 'admin') {
+            abort(403, 'Unauthorized action. Only administrators can delete records.');
+        }
+
+        $offer = $id instanceof Offer ? $id : Offer::findOrFail($id);
         $offer->delete();
 
         return redirect()->route('offer.index')

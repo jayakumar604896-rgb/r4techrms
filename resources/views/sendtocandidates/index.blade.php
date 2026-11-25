@@ -255,6 +255,7 @@
                             <th>Subject</th>
                             <th>Sent By</th>
                             <th>Sent on</th>
+                            <th class="text-center">Actions</th>
                             <!--<th>Attachments</th>-->
                         </tr>
                     </thead>
@@ -266,6 +267,17 @@
                                 <td class="fw-semibold">{{ $brochure->subject }}</td>
                                 <td>{{ $users[$brochure->created_by] ?? '' }}</td>
                                 <td>{{ $brochure->created_at->format('d M, Y h:i A') }}</td>
+                                <td class="text-center">
+                                    @if(Auth::check() && strtolower(Auth::user()->role) === 'admin')
+                                    <form action="{{ route('sendtocandidates.destroy', $brochure->id) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-danger text-white shadow-sm" title="Delete Mail" onclick="return confirm('Are you sure you want to delete this record?')">
+                                            <i class="mdi mdi-delete"></i> Delete
+                                        </button>
+                                    </form>
+                                    @endif
+                                </td>
                                 <!--<td>
                                     @php
                                         $attachments = json_decode($brochure->attachments, true);

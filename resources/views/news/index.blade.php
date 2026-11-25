@@ -129,13 +129,15 @@
                                     <a href="{{ route('news.edit', $new->id) }}" class="btn btn-sm btn-primary" title="Edit">
                                         <i class="mdi mdi-pencil"></i>
                                     </a>
+                                    @if(Auth::check() && strtolower(Auth::user()->role) === 'admin')
                                     <form action="{{ route('news.destroy', $new->id) }}" method="POST" style="display: inline;">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger" title="Delete" onclick="return confirm('Are you sure?')">
+                                        <button type="submit" class="btn btn-sm btn-danger" title="Delete" onclick="return confirm('Are you sure you want to delete this record?')">
                                             <i class="mdi mdi-delete"></i>
                                         </button>
                                     </form>
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach

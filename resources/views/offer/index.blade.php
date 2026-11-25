@@ -138,6 +138,16 @@
                                        class="btn btn-sm btn-primary text-white shadow-sm">
                                         <i class="mdi mdi-pencil"></i> Edit
                                     </a>
+
+                                    @if(Auth::check() && strtolower(Auth::user()->role) === 'admin')
+                                    <form action="{{ route('offer.delete', $offer->id) }}" method="POST" class="d-inline ms-1">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-danger text-white shadow-sm" title="Delete Offer" onclick="return confirm('Are you sure you want to delete this record?')">
+                                            <i class="mdi mdi-delete"></i> Delete
+                                        </button>
+                                    </form>
+                                    @endif
                                 </td>
 
                             </tr>

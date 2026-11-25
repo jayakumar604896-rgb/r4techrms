@@ -237,10 +237,11 @@
                                        title="Edit Receipt">
                                         <i class="mdi mdi-pencil"></i> Edit
                                     </a>
+                                    @if(Auth::check() && strtolower(Auth::user()->role) === 'admin')
                                     <form action="{{ route('receipts.destroy', $receipt) }}" 
                                           method="POST" 
                                           style="display:inline"
-                                          onsubmit="return confirm('Are you sure you want to delete this receipt?');">
+                                          onsubmit="return confirm('Are you sure you want to delete this record?');">
                                         @csrf @method('DELETE')
                                         <button type="submit" 
                                                 class="btn btn-sm btn-danger text-white shadow-sm"
@@ -248,6 +249,7 @@
                                             <i class="mdi mdi-delete"></i> Delete
                                         </button>
                                     </form>
+                                    @endif
                                 </td>
                             </tr>
                             @endforeach

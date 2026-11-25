@@ -310,10 +310,11 @@
                                             data-bs-toggle="tooltip">
                                         <i class="mdi mdi-eye-outline"></i>
                                     </button>
+                                    @if(Auth::check() && strtolower(Auth::user()->role) === 'admin')
                                     <form action="{{ route('daily-progress.destroy', $record) }}" 
                                           method="POST" 
                                           class="d-inline"
-                                          onsubmit="return confirm('Delete this record?')">
+                                          onsubmit="return confirm('Are you sure you want to delete this record?')">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" 
@@ -323,6 +324,7 @@
                                             <i class="mdi mdi-delete-outline"></i>
                                         </button>
                                     </form>
+                                    @endif
                                 </div>
                             </td>
                         </tr>

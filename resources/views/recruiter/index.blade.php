@@ -524,6 +524,16 @@
                                        class="btn btn-sm btn-primary text-white shadow-sm">
                                         <i class="mdi mdi-pencil"></i> Edit
                                     </a>
+
+                                    @if(Auth::check() && strtolower(Auth::user()->role) === 'admin')
+                                        <form action="{{ route('recruiters.destroy', $record->id) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-danger text-white shadow-sm ms-1" title="Delete Recruiter" onclick="return confirm('Are you sure you want to delete this record?')">
+                                                <i class="mdi mdi-delete"></i> Delete
+                                            </button>
+                                        </form>
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach

@@ -6,6 +6,7 @@ use App\Models\Candidate;
 use App\Models\CandidateFile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 
 class CandidateFileController extends Controller
 {
@@ -103,12 +104,20 @@ class CandidateFileController extends Controller
     /**
      * Remove the file from storage and database.
      */
-    public function destroy(CandidateFile $candidateFile)
+    public function destroy($candidateFile)
     {
-        // Delete physical file
-        Storage::disk('public')->delete($candidateFile->file_path);
+        if (!Auth::check() || strtolower(Auth::user()->role ?? '') !== 'admin') {
+            abort(403, 'Unauthorized action. Only administrators can delete records.');
+        }
 
-        $candidateFile->delete();
+        $file = $candidateFile instanceof CandidateFile ? $candidateFile : CandidateFile::findOrFail($candidateFile);
+
+        // Delete physical file
+        if ($file->file_path && Storage::disk('public')->exists($file->file_path)) {
+            Storage::disk('public')->delete($file->file_path);
+        }
+
+        $file->delete();
 
         return redirect()->route('candidate-files.index')
                          ->with('success', 'File deleted successfully.');

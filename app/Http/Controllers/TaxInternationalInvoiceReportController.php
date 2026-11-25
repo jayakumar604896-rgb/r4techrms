@@ -401,6 +401,10 @@ class TaxInternationalInvoiceReportController extends Controller
      */
     public function destroy($id)
     {
+        if (!Auth::check() || strtolower(Auth::user()->role ?? '') !== 'admin') {
+            abort(403, 'Unauthorized action. Only administrators can delete records.');
+        }
+
         try {
             $invoice = TaxInternationalInvoiceReport::find($id);
             

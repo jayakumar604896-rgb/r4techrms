@@ -381,9 +381,10 @@
                                             <i class="mdi mdi-printer"></i>
                                         </a>
 
+                                        @if(Auth::check() && strtolower(Auth::user()->role) === 'admin')
                                         <form action="{{ route('tax-invoice-reports.destroy', $invoice->id) }}" 
                                               method="POST" class="d-inline"
-                                              onsubmit="return confirm('Are you sure you want to delete this invoice?');">
+                                              onsubmit="return confirm('Are you sure you want to delete this record?');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-danger btn-action shadow-sm"
@@ -391,6 +392,7 @@
                                                 <i class="mdi mdi-delete"></i>
                                             </button>
                                         </form>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>

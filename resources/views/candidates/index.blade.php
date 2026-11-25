@@ -419,6 +419,15 @@
                                    class="btn btn-sm btn-primary text-white shadow-sm">
                                     <i class="mdi mdi-pencil"></i> Edit
                                 </a>
+                                @if(Auth::check() && strtolower(Auth::user()->role) === 'admin')
+                                    <form action="{{ route('candidates.destroy', $candidate->id) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-danger text-white shadow-sm ms-1" title="Delete Candidate" onclick="return confirm('Are you sure you want to delete this record?')">
+                                            <i class="mdi mdi-delete"></i> Delete
+                                        </button>
+                                    </form>
+                                @endif
                                 @if($candidate->has_resume)
                                     <small class="text-success d-block mt-1">
                                         <i class="mdi mdi-file-check"></i> Resume Available

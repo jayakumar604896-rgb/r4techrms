@@ -250,6 +250,16 @@
                                            title="Edit">
                                             <i class="mdi mdi-pencil"></i>
                                         </a>
+
+                                        @if(Auth::check() && strtolower(Auth::user()->role) === 'admin')
+                                        <form action="{{ route('demands.destroy', $demand->id) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-danger text-white shadow-sm ms-1" title="Delete Demand" onclick="return confirm('Are you sure you want to delete this record?')">
+                                                <i class="mdi mdi-delete"></i>
+                                            </button>
+                                        </form>
+                                        @endif
                                         
                                         {{-- Quick Status Change Dropdown --}}
                                        {{-- <div class="btn-group" role="group">

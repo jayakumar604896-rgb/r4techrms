@@ -126,13 +126,15 @@
                                        class="btn btn-sm btn-primary">
                                         <i class="mdi mdi-pencil"></i>
                                     </a>
+                                    @if(Auth::check() && strtolower(Auth::user()->role) === 'admin')
                                     <form action="{{ route('newbrochures.destroy', $brochure->id) }}" method="POST" class="d-inline">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this brochure?')">
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this record?')">
                                             <i class="mdi mdi-delete"></i>
                                         </button>
                                     </form>
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach

@@ -165,6 +165,7 @@
                             <th>Subject</th>
                             <th>Sent by </th>
                             <th>Sent on</th>
+                            <th class="text-center">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -176,6 +177,17 @@
                                 <td class="fw-semibold">{{ $brochure->subject }}</td>
                                 <td>{{ $users[$brochure->created_by] ?? '' }}</td>
                                 <td>{{ $brochure->created_at->format('d M, Y h:i A') }}</td>
+                                <td class="text-center">
+                                    @if(Auth::check() && strtolower(Auth::user()->role) === 'admin')
+                                    <form action="{{ route('sendtoothers.destroy', $brochure->id) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-danger text-white shadow-sm" title="Delete Mail" onclick="return confirm('Are you sure you want to delete this record?')">
+                                            <i class="mdi mdi-delete"></i> Delete
+                                        </button>
+                                    </form>
+                                    @endif
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>

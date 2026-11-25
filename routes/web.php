@@ -106,7 +106,33 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/recruiters/store', [RecruiterController::class, 'store'])->name('recruiters.store');
     Route::get('/edit/{id}', [RecruiterController::class, 'edit'])->name('recruiters.edit');
     Route::put('/update/{id}', [RecruiterController::class, 'update'])->name('recruiters.update');
-    Route::get('/delete/{id}', [RecruiterController::class, 'destroy'])->name('recruiters.delete');
+    // Admin-Only Delete Routes with backend authorization
+    Route::middleware(['admin'])->group(function () {
+        Route::delete('/recruiters/{id}', [RecruiterController::class, 'destroy'])->name('recruiters.destroy');
+        Route::get('/delete/{id}', [RecruiterController::class, 'destroy'])->name('recruiters.delete');
+
+        Route::delete('/candidates/{id}', [CandidateController::class, 'destroy'])->name('candidates.destroy');
+        Route::get('/candidates/delete/{id}', [CandidateController::class, 'destroy'])->name('candidates.delete');
+
+        Route::delete('/offer/delete/{id}', [OfferController::class, 'destroy'])->name('offer.delete');
+        Route::delete('/daily-progress/{dailyProgress}', [DailyProgressController::class, 'destroy'])->name('daily-progress.destroy');
+
+        Route::delete('/demands/{demand}', [DemandController::class, 'destroy'])->name('demands.destroy');
+        Route::delete('/newbrochures/{newbrochure}', [BrochureController::class, 'destroy'])->name('newbrochures.destroy');
+        Route::delete('/sendtoothers/{sendtoother}', [SendtoOthermailController::class, 'destroy'])->name('sendtoothers.destroy');
+        Route::delete('/sendtocandidates/{sendtocandidate}', [SendtoCandidatemailController::class, 'destroy'])->name('sendtocandidates.destroy');
+        Route::delete('/news/{news}', [NewsController::class, 'destroy'])->name('news.destroy');
+        Route::delete('/company-settings/{company_setting}', [CompanySettingController::class, 'destroy'])->name('company-settings.destroy');
+        Route::delete('/agents/{agent}', [AgentController::class, 'destroy'])->name('agents.destroy');
+        Route::delete('/service-provider-details/{service_provider_detail}', [ServiceProviderDetailController::class, 'destroy'])->name('service-provider-details.destroy');
+        Route::delete('/clients/{client}', [ClientController::class, 'destroy'])->name('clients.destroy');
+        Route::delete('/invoice-reports/{invoice_report}', [InvoiceReportController::class, 'destroy'])->name('invoice-reports.destroy');
+        Route::delete('/domestic-invoice-reports/{domestic_invoice_report}', [DomesticProformanceInvoiceReportController::class, 'destroy'])->name('domestic-invoice-reports.destroy');
+        Route::delete('/tax-invoice-reports/{tax_invoice_report}', [TaxInvoiceReportController::class, 'destroy'])->name('tax-invoice-reports.destroy');
+        Route::delete('/tax-international-invoice-reports/{tax_international_invoice_report}', [TaxInternationalInvoiceReportController::class, 'destroy'])->name('tax-international-invoice-reports.destroy');
+        Route::delete('/receipts/{receipt}', [ReceiptController::class, 'destroy'])->name('receipts.destroy');
+        Route::delete('/candidate-files/{candidate_file}', [CandidateFileController::class, 'destroy'])->name('candidate-files.destroy');
+    });
     Route::get('/view/{id}', [RecruiterController::class, 'show'])->name('recruiter.show');
     Route::post('/recruiters/update-status', [RecruiterController::class, 'updateStatus'])->name('recruiters.update.status');
     Route::get('/recruiter/daily-progress', [RecruiterController::class, 'dailyProgress'])->name('recruiter.daily');
@@ -137,7 +163,7 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/candidate-update/{id}', [CandidateController::class, 'update'])->name('candidates.update');
     Route::post('/candidates/send-pdf-email', [CandidateController::class, 'sendPdfEmail'])->name('candidates.send-pdf-email');
     Route::post('/recruiters/send-pdf-email', [RecruiterController::class, 'sendPdfEmail'])->name('recruiters.send-pdf-email');
-    // Route::get('/delete/{id}', [CandidateController::class, 'destroy'])->name('candidates.delete');
+
     Route::get('/candidate-view/{id}', [CandidateController::class, 'show'])->name('candidates.show');
     Route::post('/candidates/send-to-recruiter', [CandidateController::class, 'sendToRecruiter'])->name('candidates.send-to-recruiter');
     Route::put('/candidates/{id}/update-status', [CandidateController::class, 'updateStatus'])->name('candidates.updateStatus');
@@ -150,9 +176,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/offer/edit/{id}', [OfferController::class, 'edit'])->name('offer.edit');
     Route::put('/offer/update/{id}', [OfferController::class, 'update'])->name('offer.update');
 
-    Route::delete('/offer/delete/{id}', [OfferController::class, 'destroy'])->name('offer.delete');
 
-    Route::resource('/demands', DemandController::class);
+
+    Route::resource('/demands', DemandController::class)->except(['destroy']);
     Route::post('demands/{demand}/status', [DemandController::class, 'changeStatus'])->name('demands.status');
     Route::get('/demands/{id}/print', [DemandController::class, 'print'])->name('demands.print');
 
@@ -162,7 +188,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/', [DailyProgressController::class, 'store'])->name('store');
         Route::get('/{dailyProgress}/edit', [DailyProgressController::class, 'edit'])->name('edit');
         Route::put('/{dailyProgress}', [DailyProgressController::class, 'update'])->name('update');
-        Route::delete('/{dailyProgress}', [DailyProgressController::class, 'destroy'])->name('destroy');
+        Route::delete('/{dailyProgress}', [DailyProgressController::class, 'destroy'])->name('destroy')->middleware('admin');
         
         // Import/Export
         Route::get('/import', [DailyProgressController::class, 'import'])->name('import');
@@ -170,19 +196,19 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/export', [DailyProgressController::class, 'export'])->name('export');
     });
 
-    Route::resource('newbrochures', BrochureController::class);
-    Route::resource('sendtoothers', SendtoOthermailController::class);
+    Route::resource('newbrochures', BrochureController::class)->except(['destroy']);
+    Route::resource('sendtoothers', SendtoOthermailController::class)->except(['destroy']);
     Route::post('/mailhistory/send-pdf-email', [SendtoOthermailController::class, 'sendPdfEmail'])->name('mailhistory.send-pdf-email');
-    Route::resource('sendtocandidates', SendtoCandidatemailController::class);
-    Route::resource('news', NewsController::class);
-    Route::resource('company-settings', CompanySettingController::class);
-    Route::resource('agents', AgentController::class);
+    Route::resource('sendtocandidates', SendtoCandidatemailController::class)->except(['destroy']);
+    Route::resource('news', NewsController::class)->except(['destroy']);
+    Route::resource('company-settings', CompanySettingController::class)->except(['destroy']);
+    Route::resource('agents', AgentController::class)->except(['destroy']);
     Route::get('agent/prints/{id}', [AgentController::class,'printClient']);
     Route::get('service-provider/prints/{id}', [ServiceProviderDetailController::class,'printProvider']);
-    Route::resource('service-provider-details', ServiceProviderDetailController::class);
-    Route::resource('clients', ClientController::class);
+    Route::resource('service-provider-details', ServiceProviderDetailController::class)->except(['destroy']);
+    Route::resource('clients', ClientController::class)->except(['destroy']);
     Route::get('client/prints/{id}', [ClientController::class,'printClient']);
-    Route::resource('invoice-reports', InvoiceReportController::class);
+    Route::resource('invoice-reports', InvoiceReportController::class)->except(['destroy']);
     Route::prefix('invoice-reports')->group(function () {
         Route::get('/statistics', [InvoiceReportController::class, 'statistics'])
             ->name('invoice-reports.statistics');
@@ -201,7 +227,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/find-by-number', [InvoiceReportController::class, 'getByInvoiceNumber'])
             ->name('invoice-reports.find-by-number');
     });
-    Route::resource('domestic-invoice-reports', DomesticProformanceInvoiceReportController::class);
+    Route::resource('domestic-invoice-reports', DomesticProformanceInvoiceReportController::class)->except(['destroy']);
     Route::prefix('domestic-invoice-reports')->group(function () {
         Route::get('/statistics', [InvoiceReportController::class, 'statistics'])
             ->name('domestic-invoice-reports.statistics');
@@ -220,7 +246,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/find-by-number', [InvoiceReportController::class, 'getByInvoiceNumber'])
             ->name('domestic-invoice-reports.find-by-number');
     });
-    Route::resource('tax-invoice-reports', TaxInvoiceReportController::class);
+    Route::resource('tax-invoice-reports', TaxInvoiceReportController::class)->except(['destroy']);
     Route::prefix('tax-invoice-reports')->group(function () {
         Route::get('/statistics', [InvoiceReportController::class, 'statistics'])
             ->name('tax-invoice-reports.statistics');
@@ -239,7 +265,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/find-by-number', [InvoiceReportController::class, 'getByInvoiceNumber'])
             ->name('tax-invoice-reports.find-by-number');
     });
-    Route::resource('tax-international-invoice-reports', TaxInternationalInvoiceReportController::class);
+    Route::resource('tax-international-invoice-reports', TaxInternationalInvoiceReportController::class)->except(['destroy']);
     Route::prefix('tax-international-invoice-reports')->group(function () {
         Route::get('/statistics', [TaxInternationalInvoiceReportController::class, 'statistics'])
             ->name('tax-international-invoice-reports.statistics');
@@ -258,8 +284,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/find-by-number', [TaxInternationalInvoiceReportController::class, 'getByInvoiceNumber'])
             ->name('tax-international-invoice-reports.find-by-number');
     });
-    Route::resource('receipts', ReceiptController::class);
-    Route::resource('candidate-files', CandidateFileController::class);
+    Route::resource('receipts', ReceiptController::class)->except(['destroy']);
+    Route::resource('candidate-files', CandidateFileController::class)->except(['destroy']);
     Route::post('/candidates/files', [CandidateController::class, 'getFiles'])->name('candidates.files');
 	Route::post('/demands/generate-ref-no', [DemandController::class, 'generateReferenceNumber'])->name('demands.generate-ref-no');
 });

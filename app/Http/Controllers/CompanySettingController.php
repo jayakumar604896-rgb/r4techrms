@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\CompanySetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Auth;
 
 class CompanySettingController extends Controller
 {
@@ -111,14 +112,20 @@ class CompanySettingController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(CompanySetting $companySetting)
+    public function destroy($companySetting)
     {
-        // Delete image if exists
-        if ($companySetting->image && file_exists(public_path('uploads/company-settings/' . $companySetting->image))) {
-            unlink(public_path('uploads/company-settings/' . $companySetting->image));
+        if (!Auth::check() || strtolower(Auth::user()->role ?? '') !== 'admin') {
+            abort(403, 'Unauthorized action. Only administrators can delete records.');
         }
 
-        $companySetting->delete();
+        $setting = $companySetting instanceof CompanySetting ? $companySetting : CompanySetting::findOrFail($companySetting);
+
+        // Delete image if exists
+        if ($setting->image && file_exists(public_path('uploads/company-settings/' . $setting->image))) {
+            @unlink(public_path('uploads/company-settings/' . $setting->image));
+        }
+
+        $setting->delete();
 
         return redirect()->route('company-settings.index')
             ->with('success', 'Company setting deleted successfully.');

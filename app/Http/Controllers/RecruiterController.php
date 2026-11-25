@@ -195,6 +195,21 @@ public function update(Request $request, $id)
 
     // Delete recruiter
     public function destroy($id) {
+        if (!Auth::check() || strtolower(Auth::user()->role ?? '') !== 'admin') {
+            abort(403, 'Unauthorized action. Only administrators can delete records.');
+        }
+
+        if (Auth::id() == $id) {
+            return redirect()->route('recruiters')->with('error', 'You cannot delete your own admin account.');
+        }
+
+        // Check dependencies before deletion
+        if (\App\Models\Demand::where('recruiter_id', $id)->orWhere('created_by', $id)->exists() ||
+            \App\Models\DailyProgress::where('user_id', $id)->exists()) {
+            return redirect()->route('recruiters')
+                ->with('error', 'Cannot delete employee/recruiter. This user has associated demands or daily progress records.');
+        }
+
         $user = User::findOrFail($id);
         $user->delete();
         return redirect()->route('recruiters')->with('success', 'Recruiter deleted successfully!');

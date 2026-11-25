@@ -433,9 +433,14 @@ public function index(Request $request)
     /**
      * Remove the specified demand from storage.
      */
-    public function destroy(Demand $demand)
+    public function destroy($demand)
     {
-        $demand->delete();
+        if (!Auth::check() || strtolower(Auth::user()->role ?? '') !== 'admin') {
+            abort(403, 'Unauthorized action. Only administrators can delete records.');
+        }
+
+        $item = $demand instanceof Demand ? $demand : Demand::findOrFail($demand);
+        $item->delete();
 
         return redirect()->route('demands.index')
             ->with('success', 'Demand deleted successfully.');
